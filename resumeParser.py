@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from groq import Groq
+import time
 
 from pydantic import BaseModel
 
@@ -304,3 +305,58 @@ def read_resume(file_path):
         return read_docx(file_path)
     else:
         return None
+
+
+resume_folder = Path("resumes")
+all_results=[]
+for file_path in resume_folder.iterdir():
+   
+    if file_path.suffix.lower() not in [".pdf", ".docx"]:
+        continue
+
+    print("\nProcessing:", file_path.name)
+    resume_text = read_resume(file_path)
+    parsed_resume=parse_resume(resume_text) # llm call1
+    time.sleep(5)
+    result = final_score(job, parsed_resume) #llm caLL2
+    #score and details
+    #acount chtgpt
+    # request bhejna shhur krega millions
+    #chattgot server jam ho jayega
+    time.sleep(5)
+    print("Score:", result.score)
+    all_results.append({
+        "name": parsed_resume.name,
+        "score": result.score,
+        "details": result.details
+    })
+all_results.sort(
+    key=lambda candidate: candidate["score"],
+    reverse=True
+)
+top_2 = all_results[:2]
+worst_2 = all_results[-2:]
+
+
+print("TOP 2 CANDIDATES")
+for candidate in top_2:
+
+    print(
+        candidate["name"],
+        "-",
+        candidate["score"],
+        "%"
+    )
+
+    print(candidate["details"])
+
+print("LOWEST 2 CANDIDATES")
+for candidate in worst_2:
+
+    print(
+        candidate["name"],
+        "-",
+        candidate["score"],
+        "%"
+    )
+    print(candidate["details"])
